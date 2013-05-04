@@ -13,10 +13,12 @@ describe Henson::Source::Path do
     expect(it).to be_a(Henson::Source::Generic)
   end
 
-  it "raises an error if the path does not exist" do
-    expect {
-      Henson::Source::Path.new("dne", "/does/not/exist")
-    }.to raise_error(Henson::ModuleNotFound, "/does/not/exist")
+  describe "#initialize" do
+    it "raises an error if the path does not exist" do
+      expect {
+        Henson::Source::Path.new("dne", "/does/not/exist")
+      }.to raise_error(Henson::ModuleNotFound, "/does/not/exist")
+    end
   end
 
   describe "#fetched?" do
@@ -25,13 +27,13 @@ describe Henson::Source::Path do
     end
   end
 
-  context "#fetch!" do
+  describe "#fetch!" do
     it "is a noop" do
       expect(it.fetch!).to be_nil
     end
   end
 
-  context "#install!" do
+  describe "#install!" do
     let(:ui) { mock }
 
     before do
@@ -53,14 +55,14 @@ describe Henson::Source::Path do
     end
   end
 
-  context "versions" do
+  describe "#versions" do
     it "returns an array that contains version from modulefile" do
       it.stubs(:version_from_modulefile).returns("1.0.0")
       expect(it.versions).to eq(["1.0.0"])
     end
   end
 
-  context "valid?" do
+  describe "#valid?" do
     it "returns true if path_exists? is true" do
       it.stubs(:path_exists?).returns(true)
       expect(it.send(:valid?)).to be_true
@@ -72,7 +74,7 @@ describe Henson::Source::Path do
     end
   end
 
-  context "path_exists?" do
+  describe "#path_exists?" do
     it "returns true if path is defined and is a directory" do
       expect(it.send(:path_exists?)).to be_true
     end
@@ -94,7 +96,7 @@ describe Henson::Source::Path do
     end
   end
 
-  context "version_from_modulefile" do
+  describe "#version_from_modulefile" do
     it "parses the Modulefile to get the version string" do
       expect(it.send(:version_from_modulefile)).to eq("0.0.1")
     end
