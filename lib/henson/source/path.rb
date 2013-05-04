@@ -6,14 +6,19 @@ module Henson
       attr_reader :path, :name
 
       def initialize name, path
-        @path = path
-        @name = name
+        @path   = path
+        @name   = name
+        @remote = "."
 
         raise ModuleNotFound, path unless valid?
       end
 
       def fetched?
         true
+      end
+
+      def version
+        "0.0.0"
       end
 
       def fetch!

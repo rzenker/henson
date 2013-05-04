@@ -24,6 +24,7 @@ module Henson
         @name    = name
         @repo    = repo
         @options = opts
+        @remote  = repo
 
 
         # if it"s a branch, all possible versions are refs on that branch
@@ -50,6 +51,10 @@ module Henson
           @target_revision = "origin/master"
           @ref_type = :branch
         end
+      end
+
+      def version
+        "somesha"
       end
 
       def fetched?

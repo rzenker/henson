@@ -1,6 +1,8 @@
 module Henson
   module Source
     class Generic
+      attr_reader :remote
+
       def fetch!
         raise NotImplementedError
       end

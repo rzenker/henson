@@ -54,5 +54,9 @@ module Henson
     def source_name
       source.class.name.split("::").last.downcase
     end
+
+    def dependencies
+      []
+    end
   end
 end

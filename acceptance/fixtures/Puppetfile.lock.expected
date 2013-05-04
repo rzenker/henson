@@ -1,0 +1,29 @@
+FORGE
+  remote: https://forge.puppetlabs.com/
+  specs:
+    cloud_provisioner (1.0.5)
+
+GIT
+  remote: git://github.com/puppetlabs/puppetlabs-lvm
+  specs:
+    lvm (8a7b20e3)
+
+GIT
+  remote: git://github.com/puppetlabs/puppetlabs-openstack
+  specs:
+    openstack (somesha)
+
+GIT
+  remote: git://github.com/puppetlabs/puppetlabs-stdlib
+  specs:
+    stdlib (somesha)
+
+GITHUB
+  remote: https://api.github.com/
+  specs:
+    boxen (0.1.9)
+
+PATH
+  remote: "."
+  specs:
+    ssh (0.0.0)

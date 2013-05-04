@@ -42,36 +42,36 @@ module Henson
     end
 
     def self.group_modules_by_source_and_remote modules
-      h = {}
+      Hash.new.tap do |h|
+        modules.each do |mod|
+          source_type = mod.source.class.name.rpartition("::").last.upcase
 
-      modules.each do |mod|
-        source_type = mod.source.class.rpartition("/").last.upcase
+          h[source_type] ||= {}
+          h[source_type][mod.source.remote] ||= []
 
-        h[source_type] ||= {}
-        h[source_type][mod.source.remote] ||= []
-
-        h[source_type][mod.source.remote] << mod
-      end
+          h[source_type][mod.source.remote] << mod
+        end
+      end.sort
     end
 
     def self.lock! modules
-      grouped = group_modules_by_source_and_remote modules
+      grouped = group_modules_by_source_and_remote(modules)
 
       lock = ""
 
       grouped.each do |source_type, mods_by_remote|
-        lock << "#{source_type}\n"
-
         mods_by_remote.each do |remote, mods|
-          lock << "  remote: #{remote}\n  specs:\n"
+          lock << "#{source_type}\n  remote: #{remote}\n  specs:\n"
 
-          mods.each do |mod|
-            lock << "    #{mod.name} (#{mod.version})\n"
+          mods.sort_by(&:name).each do |mod|
+            lock << "    #{mod.name} (#{mod.source.version})\n"
 
-            mod.dependencies.each do |dep|
-              lock << "      #{dep.name} #{dep.requirement}\n"
+            mod.dependencies.sort_by(&:name).each do |dep|
+              lock << "      #{dep.name} #{dep.source.requirement}\n"
             end
           end
+
+          lock << "\n"
         end
       end
 

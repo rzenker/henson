@@ -38,4 +38,15 @@ describe "henson install" do
   it "should have boxen module" do
     expect(Pathname.new("#{project}/shared/boxen")).to be_directory
   end
+
+  it "should generate a correct lockfile" do
+    require "pry"
+    binding.pry
+
+    lockfile = Pathname.new("#{project}/Puppetfile.lock")
+    expected = Pathname.new("#{project}/Puppetfile.lock.expected")
+
+    expect(lockfile).to be_file
+    expect(File.read(lockfile)).to eq(File.read(expected))
+  end
 end

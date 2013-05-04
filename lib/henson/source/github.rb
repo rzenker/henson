@@ -14,8 +14,9 @@ module Henson
       # repo        - The String GitHub repository to pull the module from
       #               (e.g. "puppetlabs/puppetlabs-stdlib").
       def initialize name, requirement, repo
-        @repo = repo
-        @api  = Henson.api_clients.github "https://api.github.com/"
+        @repo   = repo
+        @remote = "https://api.github.com/"
+        @api    = Henson.api_clients.github @remote
 
         super
       end
