@@ -7,7 +7,9 @@ module Henson
     def self.install!
       FileUtils.mkdir_p File.expand_path(Henson.settings[:path])
 
-      evaluate_puppetfile! Henson.settings[:puppetfile]
+      modules = evaluate_puppetfile! Henson.settings[:puppetfile]
+
+      lock! modules
 
       Henson.ui.success "Your modules are ready to use!"
     end
@@ -37,6 +39,47 @@ module Henson
         fetch_module! mod
         install_module! mod
       end
+    end
+
+    def self.group_modules_by_source_and_remote modules
+      h = {}
+
+      modules.each do |mod|
+        source_type = mod.source.class.rpartition("/").last.upcase
+
+        h[source_type] ||= {}
+        h[source_type][mod.source.remote] ||= []
+
+        h[source_type][mod.source.remote] << mod
+      end
+    end
+
+    def self.lock! modules
+      grouped = group_modules_by_source_and_remote modules
+
+      lock = ""
+
+      grouped.each do |source_type, mods_by_remote|
+        lock << "#{source_type}\n"
+
+        mods_by_remote.each do |remote, mods|
+          lock << "  remote: #{remote}\n  specs:\n"
+
+          mods.each do |mod|
+            lock << "    #{mod.name} (#{mod.version})\n"
+
+            mod.dependencies.each do |dep|
+              lock << "      #{dep.name} #{dep.requirement}\n"
+            end
+          end
+        end
+      end
+
+      File.open(lockfile) { |f| f.write lock }
+    end
+
+    def self.lockfile
+      @lockfile ||= "#{Henson.settings[:puppetfile]}.lock"
     end
 
     # Internal: Fetch a module if it needs fetching.
