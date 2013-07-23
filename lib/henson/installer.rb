@@ -44,9 +44,10 @@ module Henson
     # mod - The PuppetModule to fetch.
     def self.fetch_module! mod
       if mod.needs_fetching?
+        Henson.ui.info "#{mod.name} is being updated"
         mod.fetch!
       else
-        Henson.ui.debug "#{mod} does not need fetching"
+        Henson.ui.debug "#{mod} #{mod.name} does not need fetching"
       end
     end
 
@@ -55,6 +56,7 @@ module Henson
     # mod - The PuppetModule to install.
     def self.install_module! mod
       if mod.needs_installing?
+        Henson.ui.info "#{mod.name} is being installed"
         mod.install!
       else
         install_path = "#{Henson.settings[:path]}/#{mod.name}"

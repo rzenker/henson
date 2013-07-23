@@ -18,7 +18,7 @@ module Henson
         end
       end
 
-      attr_reader :name, :repo, :options
+      attr_reader :name, :repo, :options, :target_revision_without_origin
 
       def initialize name, repo, opts = {}
         @name    = name
@@ -50,16 +50,19 @@ module Henson
           @target_revision = "origin/master"
           @ref_type = :branch
         end
+        @target_revision_without_origin = @target_revision.to_s.gsub(/origin\//,'')
       end
 
       def fetched?
-        File.directory? fetch_path
+        return false unless File.directory? fetch_path
+        return false unless resolved_target_revision_fetched?
+        commit_id_fetched? remote_commit_id
       end
 
       def fetch!
         if File.directory? fetch_path
           in_repo do
-            git "fetch", "--force", "--quiet", "--tags", "origin", "'refs/heads/*:refs/heads/*'"
+            git "fetch", "--force", "--quiet", "--tags", "origin", "'refs/heads/*:refs/remotes/origin/*'"
           end
         else
           Henson.ui.debug "Fetching #{name} from #{repo}"
@@ -80,7 +83,20 @@ module Henson
       end
 
       def installed?
-        current_revision == resolved_target_revision
+        return false unless current_revision == resolved_target_revision
+        remote_commit_id == local_commit_id
+      end
+
+      def remote_commit_id
+        @remote_commit_id ||= in_repo do
+          Revision.new(git(%W(ls-remote --exit-code origin #{target_revision_without_origin})).split(/\s+/)[0])
+        end
+      end
+
+      def local_commit_id
+        in_repo do
+          Revision.new(git(%W(ls-remote --exit-code . #{target_revision_without_origin})).split(/\s+/)[0])
+        end
       end
 
       def versions
@@ -117,7 +133,7 @@ module Henson
         fetch! unless fetched?
 
         if @ref_type == :tag || @ref_type == :branch
-          versions.select { |v| v =~ Regexp.new(target_revision.gsub(/^origin\//, "")) }
+          versions.select { |v| v =~ Regexp.new(target_revision_without_origin) }
         else
           versions.map { |v| v.gsub(/^origin\//, "") }
         end
@@ -125,7 +141,7 @@ module Henson
 
       def satisfies? requirement
         if @ref_type == :tag || @ref_type == :branch
-          versions.member? target_revision.gsub(/^origin\//, "").to_s
+          versions.member? target_revision_without_origin.to_s
         else
           versions.member? resolved_target_revision.to_s
         end
@@ -133,6 +149,7 @@ module Henson
 
       private
       def git *args
+        Henson.ui.debug "#{name}: git #{args.join(' ')}\n"
         `git #{args.join(" ")}`
       rescue Errno::ENOENT
         raise GitNotInstalled if exit_status.nil?
@@ -168,6 +185,20 @@ module Henson
 
       def target_revision
         @target_revision
+      end
+
+      def commit_id_fetched? commit_id
+        in_repo do
+          git("rev-parse", '--verify', '-q', "#{commit_id}")
+          $?.success?
+        end
+      end
+
+      def resolved_target_revision_fetched?
+        in_repo do
+          git("rev-parse", '--verify', '-q', "#{target_revision}^{commit}")
+          $?.success?
+        end
       end
 
       def resolved_target_revision
