@@ -31,6 +31,8 @@ module Henson
       "Only output warnings and errors."
     method_option "debug", :type => :boolean, :banner =>
       "Turn on verbose output."
+    method_option "no-symlink", :type => :boolean, :banner =>
+      "Copy shared modules instead of symlink"
     method_option "local", :type => :boolean, :banner =>
       "Only check local cache source for modules."
     method_option "no-cache", :type => :boolean, :banner =>
@@ -45,6 +47,7 @@ module Henson
       Installer.clean!    if options[:clean]
 
       Henson.settings[:path] = options[:path] if options[:path]
+      Henson.settings[:symlink] = false if options[:"no-symlink"]
 
       Installer.install!
     end

@@ -4,6 +4,7 @@ module Henson
       self.merge!(
         :quiet      => false,
         :verbose    => false,
+        :symlink    => true,
         :puppetfile => "#{Dir.pwd}/Puppetfile",
         :path       => "#{Dir.pwd}/shared",
         :cache_path => "#{Dir.pwd}/.henson/cache",

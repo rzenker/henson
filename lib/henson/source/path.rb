@@ -21,8 +21,14 @@ module Henson
       end
 
       def install!
-        Henson.ui.debug "Symlinking #{path} to #{install_path}"
-        FileUtils.ln_sf path, install_path.to_path
+        if Henson.settings[:symlink]
+          Henson.ui.debug "Symlinking #{path} to #{install_path}"
+          FileUtils.ln_sf path, install_path.to_path
+        else
+          Henson.ui.debug "Installing #{name} from #{path} into #{Henson.settings[:path]}..."
+          Henson.ui.info  "Installing #{name} from #{path}..."
+          FileUtils.cp_r path, Henson.settings[:path]
+        end
       end
 
       def versions
